@@ -1,3 +1,3 @@
-﻿  SelectSort.cpp
-D:\prog\Algorithm\Algorithm\Algorithm\SelectSort.cpp(9): warning C4101: 'tmp': unreferenced local variable
-  Algorithm.vcxproj -> D:\prog\Algorithm\Algorithm\Debug\Algorithm.exe
+﻿  ShellSort.cpp
+D:\Prog\Algorithm\Algorithm\ShellSort.cpp(37): warning C4101: 'surplus': unreferenced local variable
+  Algorithm.vcxproj -> D:\Prog\Algorithm\Debug\Algorithm.exe
