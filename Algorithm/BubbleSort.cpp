@@ -1,35 +1,26 @@
-//#include <iostream>
-//using namespace std;
-//
-//void ShowArray(int val[]);
-//
-//const int ARRAY_SIZE = 5;
-//
-//
-//int main()
-//{
-//	int tmp;
-//	int values[ARRAY_SIZE] = { 1,5,6,7,9 };
-//	ShowArray(values);
-//	for (int i = 0; i < ARRAY_SIZE; i++)
-//	{
-//		for (int j = 0; i <j; j++)
-//		{
-//			if (values[j] > values[j + 1])
-//			{
-//				tmp = values[j];
-//				values[j] = values[j + 1];
-//				values[j + 1] = tmp;
-//			}
-//		}
-//	}
-//		ShowArray(values);
-//}
-//
-//void ShowArray(int val[])
-//{
-//	for (int i = 0; i < ARRAY_SIZE; i++)
-//	{
-//		cout << val[i] << endl;
-//	}
-//}
+#if 0
+#include <iostream>
+using namespace std;
+const int ARRAY_SIZE = 5;
+int main()
+{
+	int a[ARRAY_SIZE] = { 3,5,6,7,8 };
+
+	for (int i = 0; i < ARRAY_SIZE; i++)
+	{
+		for (int j = i + 1; j < ARRAY_SIZE; j++)
+		{
+			if (a[i] < a[j])
+			{
+				continue;
+			}
+			swap(a[i], a[j]);
+		}
+	}
+	
+	for (int k = 0; k < ARRAY_SIZE; k++)
+	{
+		cout << a[k];
+	}
+}
+#endif
