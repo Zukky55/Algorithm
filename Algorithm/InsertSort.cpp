@@ -8,7 +8,9 @@ const int minVal = 0;
 const int maxVal = 100;
 
 
-int a[ARRAY_SIZE];
+//int a[ARRAY_SIZE];
+int a[ARRAY_SIZE] = { 3,2,6,9,8,1,5,7,4 };
+
 
 void DisplayResult(int result[])
 {
@@ -31,7 +33,7 @@ void GenerateRandomArray(int material[])
 
 int main()
 {
-	GenerateRandomArray(a);
+	//GenerateRandomArray(a);
 
 	for (int i = 1; i < ARRAY_SIZE; i++)
 	{

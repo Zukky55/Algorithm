@@ -3,13 +3,13 @@
 #include <random>
 using namespace std;
 
-const int SORT_AMOUNT = 3;
+const int SORT_AMOUNT = 5;
 const int ARRAY_SIZE = 9;
 const int minVal = 0;
 const int maxVal = 100;
 
-//int a[ARRAY_SIZE];
-int a[ARRAY_SIZE] = { 3,2,6,9,8,1,5,7,4 };
+int a[ARRAY_SIZE];
+//int a[ARRAY_SIZE] = { 3,2,6,9,8,1,5,7,4 };
 
 
 
@@ -34,20 +34,26 @@ void GenerateRandomArray(int material[])
 
 int main()
 {
-	int surplus;
-	//GenerateRandomArray(a);
+	GenerateRandomArray(a);
 
 	for (int amount = SORT_AMOUNT; amount > 0; --amount)
 	{
-		for (int i = 1; i < ARRAY_SIZE; i += amount)
+		for (int i = 0; i < amount; ++i)
 		{
-			for (int j = i; j > 0; j -= amount)
+			for (int j = amount + i; j < ARRAY_SIZE; j += amount)
 			{
-				if (a[j - amount] < a[j])
+				for (int k = j; k > 0 && k - amount >= 0; k -= amount)
 				{
-					continue;
+					cout << "a[" << k - amount << "] = " << a[k - amount] << endl;
+					cout << "a[" << k << "] = " << a[k] << endl;
+					if (a[k - amount] < a[k])
+					{
+						cout << "Continue." << endl;
+						continue;
+					}
+					cout << a[k - amount] << "‚Æ" << a[k] << "‚ð“ü‚ê‘Ö‚¦‚½" << endl;
+					swap(a[k - amount], a[k]);
 				}
-				swap(a[j - amount], a[j]);
 			}
 		}
 	}
