@@ -164,11 +164,18 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Algorithm.cpp" />
+    <ClCompile Include="a_star_algorithm.cpp" />
     <ClCompile Include="BubbleSort.cpp" />
     <ClCompile Include="BubbleSortSample.cpp" />
+    <ClCompile Include="FizzBuzz.cpp" />
     <ClCompile Include="InsertSort.cpp" />
+    <ClCompile Include="MergeSort.cpp" />
+    <ClCompile Include="MergeSortSample.cpp" />
     <ClCompile Include="SelectSort.cpp" />
     <ClCompile Include="ShellSort.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="a_star_algorithm.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
