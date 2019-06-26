@@ -1,93 +1,267 @@
-#if 0
-#include <iostream>
-#include "a_star_algorithm.h"
+#include <stdio.h>
+#include <tchar.h>
+#include <map>
+
+#define WIDTH (25)
+#define HEIGHT (10)
+
+#define GX	(15)
+#define GY	(8)
+
+#define SX	(3)
+#define SY	(2)
+
+#define KEY(X,Y) ((X) * 100 + (Y))
+#define KEYDATA(X, Y, N) pair<int, anode>(KEY(X,Y), N)
+
 using namespace std;
 
-const int MAP_HEIGHT = 4;
-const int MAP_WIDTH = 4;
+typedef struct {
+	int x;
+	int y;
+	int px;
+	int py;
+	int cost;
+} anode;
 
-enum NodeState
-{
-	Invalid,
-	S, // start
-	G, // goal
-	F, // floor 
-	W, // wall
-	O, // open
-	C, // close
+map <int, anode> mapOpen;
+map <int, anode> mapClose;
+
+int dataMap[HEIGHT][WIDTH] = {
+	{ 0, 0, 0, 0, 0,  0, 0,-1,0, 0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, },
+	{ 0, 0, 0, 0, 0,  0, 0,-1,0,-1, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, },
+	{ 0, 0, 0, 0, 0,  0, 0,-1,0,-1, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, },
+	{ 0,-1,-1,-1,-1, -1, 0,-1,0,-1, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, },
+	{ 0, 0, 0, 0, 0, -1, 0,-1,0,-1, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, },
+
+	{ 0, 0, 0, 0, 0, -1,-1,-1,0,-1, 0,0,0,0,-1, -1,-1,-1,0,0, 0,0,0,0,0, },
+	{ 0, 0, 0, 0, 0,  0, 0,-1,0,-1, 0,0,0,0,-1,  0, 0, 0,0,0, 0,0,0,0,0, },
+	{ 0, 0, 0, 0, 0,  0, 0,-1,0,-1, 0,0,0,0,-1,  0, 0,-1,0,0, 0,0,0,0,0, },
+	{ 0, 0, 0, 0, 0,  0, 0,-1,0,-1, 0,0,0,0,-1,  0, 0,-1,0,0, 0,0,0,0,0, },
+	{ 0, 0, 0, 0, 0,  0, 0, 0,0,-1, 0,0,0,0,-1,  0, 0,-1,0,0, 0,0,0,0,0, },
 };
 
-class Node
+// マップの情報を綺麗に表示する
+int out(int (*d)[WIDTH])
 {
-public:
-	Node() { }
-	Node(NodeState state);
-	~Node();
-	NodeState _state = F;
-	int _estimatedCost = 0;
-	int _actualCost = 0;
-	int _score = 0;
-	int* parent = nullptr;
-private:
-};
+	for(int h = 0; h < HEIGHT; h++){
+		for(int w = 0; w < WIDTH; w++){
+			char ch = ' ';
+			if(w == GX && h == GY) ch = '*';
+			if(w == SX && h == SY) ch = '@';
 
-Node::Node(NodeState state)
-{
-	_state = state;
-}
+			printf("%c", ch);
 
-Node::~Node()
-{
-}
+			if(d[h][w] > 0)  ch = 'o';
+			if(d[h][w] < 0)  ch = '#';
+			if(d[h][w] == 0) ch = '.';
 
-void DisplayMap()
-{
-	for (int i = 0; i < MAP_HEIGHT; i++)
-	{
-		cout << "{";
-		for (int j = 0; j < MAP_WIDTH; j++)
-		{
-			cout << map[MAP_HEIGHT][MAP_WIDTH] << " , ";
+			printf("%c", ch);
 		}
-		cout << endl;
+		printf("\n");
+	}
+	return 0;
+}
+
+// マンハッタン距離を斜め移動ありを考慮して求める
+int GetDistance(int from_x, int from_y, int to_x, int to_y)
+{
+	int cx = from_x - to_x;
+	int cy = from_y - to_y;
+
+	if(cx < 0) cx *= -1;
+	if(cy < 0) cy *= -1;
+
+	// 推定移動コストを計算
+	if(cx < cy){
+		return (cx + (cy - cx));
+	}else{
+		return (cy + (cx - cy));
 	}
 }
 
-Node map[MAP_HEIGHT][MAP_WIDTH] = {
-	{F,F,F,F},
-	{F,F,W,F},
-	{G,W,F,F},
-	{W,F,F,F},
-};
-
-Node currentNode;
-Node startNode;
-Node goalNode;
-
-int main()
+// ノード情報を一度にセットする
+anode *SetNode(anode *n, int nx, int ny, int npx, int npy, int ncost)
 {
-	startNode = currentNode = DetectNode(S);
-	goalNode = DetectNode(G);
-	DisplayMap();
+	n->x    = nx;
+	n->y    = ny;
+	n->px   = npx;
+	n->py   = npy;
+	n->cost = ncost;
+
+	return n;
 }
 
-
-
-
-
-Node DetectNode(NodeState targetState)
+// 指定した地点からスタート地点までの距離を求める
+int BackTrace(int x, int y)
 {
-	for (int i = 0; i < MAP_HEIGHT; i++)
-	{
-		for (int j = 0; j < MAP_WIDTH; j++)
-		{
-			if (map[i][j]._state == targetState)
-			{
-				return map[i][j];
+	if(x == SX && y == SY){
+		return 1;
+	}
+
+	map<int, anode>::iterator tmp = mapClose.find(KEY(x,y)) ;
+	
+	if(tmp == mapClose.end()) return 0;
+	
+	return BackTrace(tmp->second.px, tmp->second.py) + 1;
+}
+
+// A*で経路探査する
+int Search(int count){
+	
+	// openリストが空なら終了
+	if(mapOpen.empty()) return -9;
+
+	anode nodes[8];
+
+	int way[8][2] = {
+		{ -1, -1},
+		{  0, -1},
+		{  1, -1},
+		{  1,  0},
+		{  1,  1},
+		{  0,  1},
+		{ -1,  1},
+		{ -1,  0},
+	};
+
+	map<int, anode>::iterator it;
+	map<int, anode>::iterator it_min;
+	
+	anode n;
+
+	int cost_min = 9999;
+	int BackCost = 0;
+	
+	//Openリストから最小のコストを持つノードを取り出す
+	it = mapOpen.begin();
+	while(it != mapOpen.end()){
+		if(cost_min > GetDistance(it->second.x,it->second.y,GX,GY) ){
+			cost_min = GetDistance(it->second.x,it->second.y,GX,GY);
+			it_min = it;
+		}
+		it++;
+	}
+
+	SetNode(
+		&n,
+		it_min->second.x,   it_min->second.y,
+		it_min->second.px,  it_min->second.py,
+		it_min->second.cost
+	);
+	
+	// OpenリストからCloseリストへ移動
+	mapClose.insert(KEYDATA( n.x, n.y, n));
+	mapOpen.erase(KEY(n.x, n.y));
+
+	// 最小コストのノードからスタートまでの移動コスト
+	BackCost = BackTrace(n.x, n.y);
+
+	for(int i = 0; i < 8; i++){
+		// 隣接するマスの座標を計算
+		int cx = n.x + way[i][0];
+		int cy = n.y + way[i][1];
+
+		if(cx < 0) continue;
+		if(cy < 0) continue;
+
+		if(cx >= WIDTH ) continue;
+		if(cy >= HEIGHT) continue;
+
+		// 通れない所をよける
+		if(dataMap[cy][cx] == -1) continue;
+
+		SetNode(
+			&nodes[i],
+			cx,  cy,
+			n.x, n.y,
+			BackCost + GetDistance(cx, cy, GX, GY) + 1	// 推定移動コスト
+		);
+
+		//Openリストにこの座標と同じノードがあるか確認
+		if(mapOpen.find(KEY(cx,cy)) != mapOpen.end()){
+			if(nodes[i].cost < mapOpen[KEY(cx,cy)].cost){
+				mapOpen[KEY(cx,cy)].px = n.x;
+				mapOpen[KEY(cx,cy)].py = n.y;
+
+				mapOpen[KEY(cx,cy)].cost = nodes[i].cost;
 			}
+			continue;
 		}
+
+		//Closeリストにこの座標と同じノードがあるか確認
+		if(mapClose.find(KEY(cx, cy)) != mapClose.end()){
+			if(nodes[i].cost < mapClose[KEY(cx,cy)].cost){
+				anode tmp;
+
+				SetNode(
+					&tmp,
+					cx, cy,
+					n.x, n.y,
+					nodes[i].cost
+				);
+
+				mapOpen.insert(KEYDATA(cx, cy, tmp));
+				mapClose.erase(KEY(cx, cy));
+			}
+			continue;
+		}
+
+		// 見つからなければ新規としてOpenリストへ追加
+		mapOpen.insert(KEYDATA(nodes[i].x, nodes[i].y, nodes[i]));
 	}
-	return Invalid;
+
+	//見つかったら探索終了
+	if(n.x == GX && n.y == GY) return -1;
+
+	return Search(count + 1);
 }
 
-#endif
+// 最短ルートをマップデータに書き出す
+void TraceRoute(int x, int y)
+{
+	if(x == SX && y == SY){
+		printf("開始ノード>");
+		return;
+	}
+
+	map<int, anode>::iterator node_it = mapClose.find(KEY(x,y));
+
+	if(node_it != mapClose.end()){
+		dataMap[y][x] = 1;
+		
+		TraceRoute(node_it->second.px, node_it->second.py);
+		
+		if(x == GX && y == GY){
+			printf("ゴール\n");
+			return;
+		}else{
+			printf("(%d,%d)>", x, y);
+		}
+	}
+
+	return;
+}
+
+int _tmain(int argc, _TCHAR* argv[])
+{
+	anode start;
+	
+	SetNode(
+		&start, 
+		SX, SY,
+		-1, -1,
+		0
+	);
+
+	mapOpen.insert(KEYDATA(SX, SY, start));
+
+	if(Search(0) == -1){
+		printf("見つかった！\n");
+	}
+	TraceRoute(GX, GY);
+
+	out(dataMap);
+
+	return 0;
+}
