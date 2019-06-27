@@ -234,7 +234,7 @@ void TraceRoute(int x, int y)
 		if(x == GX && y == GY){
 			printf("ƒS[ƒ‹\n");
 			return;
-		}else{
+		}else{ 
 			printf("(%d,%d)>", x, y);
 		}
 	}
